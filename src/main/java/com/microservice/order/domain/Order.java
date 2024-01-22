@@ -1,6 +1,7 @@
 package com.microservice.order.domain;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
@@ -9,7 +10,7 @@ public class Order {
     private Instant orderDate;
 
     private OrderState state;
-    private List<OrderDetail> detail;
+    private List<OrderDetail> detail = new ArrayList<>();
 
     private Construction construction;
 
