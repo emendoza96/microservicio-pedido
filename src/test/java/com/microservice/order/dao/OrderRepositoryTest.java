@@ -2,6 +2,7 @@ package com.microservice.order.dao;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import com.microservice.order.domain.Construction;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 
@@ -19,6 +21,9 @@ public class OrderRepositoryTest {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private ConstructionRepository constructionRepository;
 
     private Order order;
 
@@ -72,6 +77,31 @@ public class OrderRepositoryTest {
         //then
         assert(orderRequested.isPresent());
         assertThat(orderRequested.get().getId()).isEqualTo(orderResult.getId());
+
+    }
+
+    @Test
+    void testFindByOrderId() {
+        // given
+        Order order1 = new Order();
+        order1.setDetail(List.of(new OrderDetail()));
+        Order order2 = new Order();
+
+        List<Construction> constructions = constructionRepository
+                                            .saveAll(List.of(new Construction(), new Construction()));
+
+        order.setConstruction(constructions.get(0));
+        order1.setConstruction(constructions.get(1));
+        order2.setConstruction(constructions.get(1));
+        orderRepository.save(order);
+        orderRepository.save(order1);
+        Order orderResult = orderRepository.save(order2);
+
+        // when
+        Integer construction_id = orderResult.getConstruction().getId();
+        List<Order> orders = orderRepository.findOrderByConstructionId(construction_id);
+
+        assertTrue(orders.stream().allMatch(o -> o.getConstruction().getId() == construction_id));
 
     }
 }
