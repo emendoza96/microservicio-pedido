@@ -8,8 +8,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "order_detail")
@@ -23,7 +22,7 @@ public class OrderDetail {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonBackReference
     private Order order;
 
     @ManyToOne
@@ -75,8 +74,7 @@ public class OrderDetail {
     
     @Override
     public String toString() {
-        return "OrderDetail [id=" + id + ", quantity=" + quantity + ", price=" + price + ", order="
-                + order + "]";
+        return "OrderDetail [id=" + id + ", quantity=" + quantity + ", price=" + price + "]";
     }
     
 }

@@ -29,6 +29,18 @@ public class Material {
     public Double getPrice() {
         return price;
     }
+    
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
 
     @Override
     public String toString() {
