@@ -19,48 +19,48 @@ public class OrderServiceImpl implements OrderService{
     private OrderRepository orderRepository;
 
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
+    private OrderDetailRepository detailRepository;
 
     @Override
     public List<Order> getAllOrders() {
-        return orderRepository.findAll();    
+        return orderRepository.findAll();
     }
 
     @Override
     public Optional<Order> getOrderById(Integer id) {
-        return orderRepository.findById(id);    
+        return orderRepository.findById(id);
     }
 
     @Override
     public List<Order> getOrderByConstructionId(Integer id) {
-        return orderRepository.findOrderByConstructionId(id);    
+        return orderRepository.findOrderByConstructionId(id);
     }
 
     @Override
     public Optional<OrderDetail> getOrderDetailById(Integer id) {
-        return orderDetailRepository.findById(id);    
+        return detailRepository.findById(id);
     }
 
     @Override
     public Order createOrder(Order order) {
-        return orderRepository.save(order);    
+        return orderRepository.save(order);
     }
 
     @Override
     public OrderDetail createOrderDetail(Integer idOrder, OrderDetail detail) {
         Order order = orderRepository.findById(idOrder).get();
         detail.setOrder(order);
-        return orderDetailRepository.save(detail);
+        return detailRepository.save(detail);
     }
 
     @Override
     public void deleteOrderById(Integer id) {
-        orderRepository.deleteById(id);    
+        orderRepository.deleteById(id);
     }
 
     @Override
     public void deleteOrderDetailById(Integer id) {
-        orderDetailRepository.deleteById(id);    
+        detailRepository.deleteById(id);
     }
-    
+
 }

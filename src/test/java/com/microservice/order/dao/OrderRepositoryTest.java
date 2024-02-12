@@ -63,7 +63,7 @@ public class OrderRepositoryTest {
         assertThat(orders.size()).isEqualTo(2);
     }
 
-    @Test 
+    @Test
     void testFindOrderById() {
         // given
         Order order1 = new Order();
@@ -98,10 +98,10 @@ public class OrderRepositoryTest {
         Order orderResult = orderRepository.save(order2);
 
         // when
-        Integer construction_id = orderResult.getConstruction().getId();
-        List<Order> orders = orderRepository.findOrderByConstructionId(construction_id);
+        Integer constructionId = orderResult.getConstruction().getId();
+        List<Order> orders = orderRepository.findOrderByConstructionId(constructionId);
 
-        assertTrue(orders.stream().allMatch(o -> o.getConstruction().getId() == construction_id));
+        assertTrue(orders.stream().allMatch(o -> o.getConstruction().getId() == constructionId));
 
     }
 }
