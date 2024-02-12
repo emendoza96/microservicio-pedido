@@ -91,7 +91,7 @@ public class OrderController {
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.badRequest().build();
-        } 
+        }
     }
 
     @GetMapping("/{idOrder}/detail/{id}")
@@ -130,7 +130,7 @@ public class OrderController {
 
        try {
             Order newOrder = orderService.createOrder(order);
-            return ResponseEntity.ok().body(newOrder);
+            return ResponseEntity.status(201).body(newOrder);
        } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.badRequest().build();
@@ -147,8 +147,8 @@ public class OrderController {
     public ResponseEntity<Order> saveDetailOrder(@PathVariable Integer idOrder, @RequestBody OrderDetail detail) {
 
         try {
-            Order order = orderService.createOrderDetail(idOrder, detail).getOrder();
-            return ResponseEntity.ok().body(order); 
+            OrderDetail detailResult = orderService.createOrderDetail(idOrder, detail);
+            return ResponseEntity.ok().body(detailResult.getOrder());
         } catch (Exception e) {
             System.err.println(e.getMessage());
             return ResponseEntity.badRequest().build();
