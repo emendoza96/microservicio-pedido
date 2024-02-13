@@ -25,7 +25,7 @@ import com.microservice.order.domain.OrderState;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrderControllerRestTemplateTest {
-    
+
     @LocalServerPort
     private int port;
 
@@ -44,16 +44,35 @@ public class OrderControllerRestTemplateTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(orders.size()).isGreaterThan(0);
     }
-    
+
     @Test
-    void testGetOrderByConstruction() {        
+    void testGetOrderByConstruction() {
         //given
-        
+        int idConstructionSuccess = 1;
+
         //when
+        ResponseEntity<Order[]> response = restTemplate.getForEntity("/api/order/construction/{id}", Order[].class, idConstructionSuccess);
+        List<Order> orders = Arrays.asList(response.getBody());
 
         //then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(orders.size()).isGreaterThan(0);
     }
-    
+
+    @Test
+    void testGetOrderByConstructionEmpty() {
+        //given
+        int idConstructionEmpty = 434;
+
+        //when
+        ResponseEntity<Order[]> response = restTemplate.getForEntity("/api/order/construction/{id}", Order[].class, idConstructionEmpty);
+
+        //then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEmpty();
+    }
+
     @Test
     void testGetOrderByDetailId() {
         // given
@@ -62,7 +81,7 @@ public class OrderControllerRestTemplateTest {
 
         //when
         ResponseEntity<Order> response = restTemplate.getForEntity(
-            "/api/order/{idOrder}/detail/{idDetail}", 
+            "/api/order/{idOrder}/detail/{idDetail}",
             Order.class,
             idOrder,
             idDetail
@@ -71,9 +90,9 @@ public class OrderControllerRestTemplateTest {
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(idOrder);     
+        assertThat(response.getBody().getId()).isEqualTo(idOrder);
     }
-    
+
     @Test
     void testGetOrderById() {
         // given
@@ -81,7 +100,7 @@ public class OrderControllerRestTemplateTest {
 
         //when
         ResponseEntity<Order> response = restTemplate.getForEntity(
-            "/api/order/{id}", 
+            "/api/order/{id}",
             Order.class,
             idOrder
         );
@@ -91,7 +110,7 @@ public class OrderControllerRestTemplateTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getId()).isEqualTo(idOrder);
     }
-    
+
     @Test
     void testSaveOrder() {
         //given
@@ -147,9 +166,9 @@ public class OrderControllerRestTemplateTest {
         //when
         ResponseEntity<Order> response = restTemplate.exchange(
             "/api/order/{idOrder}/detail",
-            HttpMethod.POST, 
-            requestEntity, 
-            Order.class, 
+            HttpMethod.POST,
+            requestEntity,
+            Order.class,
             idOrder
         );
 
@@ -180,7 +199,7 @@ public class OrderControllerRestTemplateTest {
         order.setOrderDate(Instant.now());
         order.setConstruction(construction);
         order.setDetail(List.of(detail));
-        
+
         ResponseEntity<Order> response0 = restTemplate.postForEntity("/api/order", order, Order.class);
         Order newOrder = response0.getBody();
 
@@ -189,34 +208,34 @@ public class OrderControllerRestTemplateTest {
             "/api/order/{id}",
             HttpMethod.DELETE,
             null,
-            Object.class, 
+            Object.class,
             newOrder.getId()
         );
 
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
-    
+
     @Test
     void testDeleteOrderDetailById() {
 
     }
-    
+
     @Test
     void testEditOrder() {
         //given
         int idOrder = 1;
         Order order = new Order();
         order.setOrderDate(null);
-        
+
         HttpEntity<Order> requestEntity = new HttpEntity<>(order);
 
         //when
         ResponseEntity<Order> response = restTemplate.exchange(
             "/api/order/edit/{id}",
-            HttpMethod.PUT, 
-            requestEntity, 
-            Order.class, 
+            HttpMethod.PUT,
+            requestEntity,
+            Order.class,
             idOrder
         );
 
