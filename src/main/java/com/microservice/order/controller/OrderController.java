@@ -223,4 +223,28 @@ public class OrderController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+
+    @PutMapping("/confirm/{id}")
+    @ApiOperation(value = "Confirm an order and create an event")
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Order successfully confirmed"),
+        @ApiResponse(code = 401, message = "Not authorized"),
+        @ApiResponse(code = 403, message = "Forbidden"),
+        @ApiResponse(code = 404, message = "Order not found")
+    })
+    public ResponseEntity<String> confirmOrder(@PathVariable Integer id){
+
+        try {
+            Order order = orderService.getOrderById(id).orElseThrow();
+            orderService.confirmOrder(order);
+            return ResponseEntity.ok().body("Order confirmed");
+        } catch (NoSuchElementException e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.status(404).build();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

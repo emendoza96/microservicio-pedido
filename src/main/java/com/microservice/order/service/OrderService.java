@@ -7,7 +7,7 @@ import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 
 public interface OrderService {
-    
+
     public List<Order> getAllOrders();
     public Optional<Order> getOrderById(Integer id);
     public List<Order> getOrderByConstructionId(Integer id);
@@ -16,5 +16,6 @@ public interface OrderService {
     public OrderDetail createOrderDetail(Integer idOrder, OrderDetail detail);
     public void deleteOrderById(Integer id);
     public void deleteOrderDetailById(Integer id);
-
+    public void confirmOrder(Order order);
+    public Boolean validateOrder(Order order);
 }

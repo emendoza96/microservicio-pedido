@@ -244,4 +244,23 @@ public class OrderControllerRestTemplateTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getOrderDate()).isNull();
     }
+
+    @Test
+    void confirmOrder() {
+        //given
+        int idOrder = 1;
+
+        //when
+        ResponseEntity<String> response = restTemplate.exchange(
+            "/api/order/confirm/{id}",
+            HttpMethod.PUT,
+            null,
+            String.class,
+            idOrder
+        );
+
+        //then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo("Order confirmed");
+    }
 }

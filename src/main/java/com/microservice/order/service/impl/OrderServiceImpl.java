@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.microservice.order.dao.OrderDetailRepository;
 import com.microservice.order.dao.OrderRepository;
+import com.microservice.order.dao.OrderStateRepository;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.service.OrderService;
@@ -20,6 +21,9 @@ public class OrderServiceImpl implements OrderService{
 
     @Autowired
     private OrderDetailRepository detailRepository;
+
+    @Autowired
+    private OrderStateRepository stateRepository;
 
     @Override
     public List<Order> getAllOrders() {
@@ -43,6 +47,7 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public Order createOrder(Order order) {
+        order.setState(stateRepository.findByState("NEW"));
         return orderRepository.save(order);
     }
 
@@ -61,6 +66,21 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public void deleteOrderDetailById(Integer id) {
         detailRepository.deleteById(id);
+    }
+
+    @Override
+    public void confirmOrder(Order order) {
+        order.setState(stateRepository.findByState("CONFIRMED"));
+        orderRepository.save(order);
+    }
+
+    @Override
+    public Boolean validateOrder(Order order) {
+        Boolean hasConstruction = order.getConstruction() != null && order.getConstruction().getId() != null;
+        Boolean hasDetails = order.getDetail().stream().allMatch(d -> d.getMaterial() != null && d.getQuantity() != null);
+        Boolean hasOrderDate = order.getOrderDate() != null;
+
+        return hasConstruction && hasDetails && hasOrderDate;
     }
 
 }

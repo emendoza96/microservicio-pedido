@@ -1,4 +1,11 @@
-INSERT INTO order_state (id, state) VALUES (1, 'ACCEPTED');
+INSERT INTO order_state (id, state) VALUES (1, 'NEW');
+INSERT INTO order_state (id, state) VALUES (2, 'CONFIRMED');
+INSERT INTO order_state (id, state) VALUES (3, 'EARRING');
+INSERT INTO order_state (id, state) VALUES (4, 'CANCELLED');
+INSERT INTO order_state (id, state) VALUES (5, 'ACCEPTED');
+INSERT INTO order_state (id, state) VALUES (6, 'REFUSED');
+INSERT INTO order_state (id, state) VALUES (7, 'IN PREPARATION');
+INSERT INTO order_state (id, state) VALUES (8, 'DELIVERED');
 
 INSERT INTO material (id, description, price) VALUES (1, 'Brick', 5.5);
 

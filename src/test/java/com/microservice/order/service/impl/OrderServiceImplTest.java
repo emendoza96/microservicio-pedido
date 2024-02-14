@@ -3,6 +3,7 @@ package com.microservice.order.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -20,9 +21,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.microservice.order.dao.OrderDetailRepository;
 import com.microservice.order.dao.OrderRepository;
+import com.microservice.order.dao.OrderStateRepository;
 import com.microservice.order.domain.Construction;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
+import com.microservice.order.domain.OrderState;
 
 
 
@@ -34,6 +37,9 @@ public class OrderServiceImplTest {
 
     @Mock
     private OrderDetailRepository detailRepository;
+
+    @Mock
+    private OrderStateRepository stateRepository;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -51,6 +57,7 @@ public class OrderServiceImplTest {
         //given
         order.setId(1);
         when(orderRepository.save(any(Order.class))).thenReturn(order);
+        when(stateRepository.findByState(anyString())).thenReturn(new OrderState());
 
         //when
         Order newOrder = orderService.createOrder(order);

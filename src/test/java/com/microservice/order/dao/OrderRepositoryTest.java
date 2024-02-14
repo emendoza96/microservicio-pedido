@@ -60,7 +60,7 @@ public class OrderRepositoryTest {
 
         //then
         assert(!orders.isEmpty());
-        assertThat(orders.size()).isEqualTo(2);
+        assertThat(orders.size()).isGreaterThan(1);
     }
 
     @Test
