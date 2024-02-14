@@ -235,7 +235,12 @@ public class OrderControllerTest {
         order1.setDetail(List.of(new OrderDetail()));
         order1.setOrderDate(Instant.now());
 
+        Construction construction = new Construction();
+        construction.setId(1);
+        order1.setConstruction(construction);
+
         //given
+        when(orderService.validateOrder(any(Order.class))).thenReturn(true);
         when(orderService.createOrder(any(Order.class))).thenReturn(order1);
 
         String jsonResult = objectMapper.writeValueAsString(order1);

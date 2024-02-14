@@ -129,6 +129,8 @@ public class OrderController {
     public ResponseEntity<Order> saveOrder(@RequestBody Order order) {
 
        try {
+            if(!orderService.validateOrder(order)) throw new Exception("Bad data");
+
             Order newOrder = orderService.createOrder(order);
             return ResponseEntity.status(201).body(newOrder);
        } catch (Exception e) {
