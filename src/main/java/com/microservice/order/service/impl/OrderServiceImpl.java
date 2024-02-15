@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.microservice.order.dao.OrderDetailRepository;
@@ -24,6 +25,9 @@ public class OrderServiceImpl implements OrderService{
 
     @Autowired
     private OrderStateRepository stateRepository;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
     public List<Order> getAllOrders() {
@@ -72,6 +76,7 @@ public class OrderServiceImpl implements OrderService{
     public void confirmOrder(Order order) {
         order.setState(stateRepository.findByState("CONFIRMED"));
         orderRepository.save(order);
+        kafkaTemplate.send("builder-yard-orders", "test");
     }
 
     @Override
