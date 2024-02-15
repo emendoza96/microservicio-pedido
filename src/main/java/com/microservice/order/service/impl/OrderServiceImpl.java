@@ -13,6 +13,7 @@ import com.microservice.order.dao.OrderStateRepository;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.service.OrderService;
+import com.microservice.order.util.JsonUtils;
 
 @Service
 public class OrderServiceImpl implements OrderService{
@@ -75,8 +76,9 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public void confirmOrder(Order order) {
         order.setState(stateRepository.findByState("CONFIRMED"));
-        orderRepository.save(order);
-        kafkaTemplate.send("builder-yard-orders", "test");
+        Order orderResult =orderRepository.save(order);
+
+        kafkaTemplate.send("test", JsonUtils.toJson(orderResult));
     }
 
     @Override
