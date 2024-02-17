@@ -76,26 +76,9 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public void confirmOrder(Order order) {
+    public Order confirmOrder(Order order) {
         order.setState(stateRepository.findByState("CONFIRMED"));
-        Order orderResult = orderRepository.save(order);
-
-        List<OrderEventHelper> ordersHelper = new ArrayList<>();
-
-
-        for(OrderDetail detail : orderResult.getDetail()) {
-            ordersHelper.add(
-                new OrderEventHelper(
-                    orderResult.getId(),
-                    detail.getId(),
-                    detail.getQuantity(),
-                    detail.getPrice(),
-                    detail.getMaterial().getId()
-                )
-            );
-        }
-
-        kafkaTemplate.send("test", JsonUtils.toJson(ordersHelper));
+        return orderRepository.save(order);
     }
 
     @Override
@@ -106,5 +89,38 @@ public class OrderServiceImpl implements OrderService{
 
         return hasConstruction && hasDetails && hasOrderDate;
     }
+
+    @Override
+    public Order setOrderStatus(Order order) {
+        Boolean hasStock = true;
+
+        for(OrderDetail detail : order.getDetail()) {
+            if (detail.getQuantity() > detail.getMaterial().getCurrentStock()) hasStock = false;
+        }
+
+        order.setState(hasStock ? stateRepository.findByState("ACCEPTED") : stateRepository.findByState("EARRING"));
+
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public void sendMessageToOrdersQueue(Order order) {
+        List<OrderEventHelper> ordersHelper = new ArrayList<>();
+
+        for(OrderDetail detail : order.getDetail()) {
+            ordersHelper.add(
+                new OrderEventHelper(
+                    order.getId(),
+                    detail.getId(),
+                    detail.getQuantity(),
+                    detail.getPrice(),
+                    detail.getMaterial().getId()
+                )
+            );
+        }
+
+        kafkaTemplate.send("builder-yard-orders", JsonUtils.toJson(ordersHelper));
+    }
+
 
 }

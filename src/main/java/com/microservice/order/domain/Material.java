@@ -15,6 +15,7 @@ public class Material {
     private Integer id;
     private String description;
     private Double price;
+    private Integer currentStock;
 
     public Material() {}
 
@@ -29,7 +30,7 @@ public class Material {
     public Double getPrice() {
         return price;
     }
-    
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -42,9 +43,18 @@ public class Material {
         this.price = price;
     }
 
+    public Integer getCurrentStock() {
+        return currentStock;
+    }
+
+    public void setCurrentStock(Integer currentStock) {
+        this.currentStock = currentStock;
+    }
+
     @Override
     public String toString() {
-        return "Material [id=" + id + ", description=" + description + ", price=" + price + "]";
+        return "Material [id=" + id + ", description=" + description + ", price=" + price + ", currentStock="
+                + currentStock + "]";
     }
 
 }

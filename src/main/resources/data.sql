@@ -7,8 +7,8 @@ INSERT INTO order_state (id, state) VALUES (6, 'REFUSED');
 INSERT INTO order_state (id, state) VALUES (7, 'IN PREPARATION');
 INSERT INTO order_state (id, state) VALUES (8, 'DELIVERED');
 
-INSERT INTO material (id, description, price) VALUES (1, 'Brick', 5.5);
-INSERT INTO material (id, description, price) VALUES (2, 'Brick 2', 8.5);
+INSERT INTO material (id, description, price, current_stock) VALUES (1, 'Brick', 5.5, 155);
+INSERT INTO material (id, description, price, current_stock) VALUES (2, 'Brick 2', 8.5, 130);
 
 INSERT INTO construction (id, description) VALUES (1, 'Test description');
 INSERT INTO construction (id, description) VALUES (2, 'Test description 2');

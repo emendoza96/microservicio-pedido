@@ -16,6 +16,8 @@ public interface OrderService {
     public OrderDetail createOrderDetail(Integer idOrder, OrderDetail detail);
     public void deleteOrderById(Integer id);
     public void deleteOrderDetailById(Integer id);
-    public void confirmOrder(Order order);
+    public Order confirmOrder(Order order);
     public Boolean validateOrder(Order order);
+    public Order setOrderStatus(Order order);
+    public void sendMessageToOrdersQueue(Order order);
 }

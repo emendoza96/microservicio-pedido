@@ -239,8 +239,14 @@ public class OrderController {
 
         try {
             Order order = orderService.getOrderById(id).orElseThrow();
-            orderService.confirmOrder(order);
-            return ResponseEntity.ok().body("Order confirmed");
+            order = orderService.confirmOrder(order);
+            order = orderService.setOrderStatus(order);
+
+            if (order.getState().getState().equals("ACCEPTED")) {
+                orderService.sendMessageToOrdersQueue(order);
+            }
+
+            return ResponseEntity.ok().body("Order " + order.getState().getState());
         } catch (NoSuchElementException e) {
             System.err.println(e.getMessage());
             return ResponseEntity.status(404).build();
