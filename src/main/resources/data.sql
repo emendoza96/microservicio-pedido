@@ -1,6 +1,6 @@
 INSERT INTO order_state (id, state) VALUES (1, 'NEW');
 INSERT INTO order_state (id, state) VALUES (2, 'CONFIRMED');
-INSERT INTO order_state (id, state) VALUES (3, 'EARRING');
+INSERT INTO order_state (id, state) VALUES (3, 'PENDING');
 INSERT INTO order_state (id, state) VALUES (4, 'CANCELLED');
 INSERT INTO order_state (id, state) VALUES (5, 'ACCEPTED');
 INSERT INTO order_state (id, state) VALUES (6, 'REFUSED');

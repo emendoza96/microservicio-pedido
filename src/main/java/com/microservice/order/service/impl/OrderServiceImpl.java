@@ -98,7 +98,7 @@ public class OrderServiceImpl implements OrderService{
             if (detail.getQuantity() > detail.getMaterial().getCurrentStock()) hasStock = false;
         }
 
-        order.setState(hasStock ? stateRepository.findByState("ACCEPTED") : stateRepository.findByState("EARRING"));
+        order.setState(hasStock ? stateRepository.findByState("ACCEPTED") : stateRepository.findByState("PENDING"));
 
         return orderRepository.save(order);
     }

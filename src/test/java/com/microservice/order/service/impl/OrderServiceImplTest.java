@@ -18,11 +18,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import com.microservice.order.dao.OrderDetailRepository;
 import com.microservice.order.dao.OrderRepository;
 import com.microservice.order.dao.OrderStateRepository;
 import com.microservice.order.domain.Construction;
+import com.microservice.order.domain.Material;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.domain.OrderState;
@@ -41,6 +43,9 @@ public class OrderServiceImplTest {
     @Mock
     private OrderStateRepository stateRepository;
 
+    @Mock
+    private KafkaTemplate<String, String> kafkaTemplate;
+
     @InjectMocks
     private OrderServiceImpl orderService;
 
@@ -49,21 +54,42 @@ public class OrderServiceImplTest {
     @BeforeEach
     void setUp() {
         order = new Order();
-        order.setDetail(List.of(new OrderDetail(), new OrderDetail()));
+        //order.setDetail(List.of(new OrderDetail(), new OrderDetail()));
+
+        Material material1 = new Material();
+        material1.setCurrentStock(50);
+        material1.setPrice(5.8d);
+        Material material2 = new Material();
+        material2.setCurrentStock(40);
+        material2.setPrice(10d);
+
+        OrderDetail detail1 = new OrderDetail();
+        detail1.setMaterial(material1);
+        detail1.setQuantity(30);
+        OrderDetail detail2 = new OrderDetail();
+        detail2.setMaterial(material2);
+        detail2.setQuantity(20);
+        order.setDetail(List.of(detail1, detail2));
+
     }
 
     @Test
     void testCreateOrder() {
         //given
-        order.setId(1);
-        when(orderRepository.save(any(Order.class))).thenReturn(order);
+        int idOrder = 1;
+
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order savedOrder = invocation.getArgument(0);
+            savedOrder.setId(idOrder);
+            return savedOrder;
+        });
         when(stateRepository.findByState(anyString())).thenReturn(new OrderState());
 
         //when
         Order newOrder = orderService.createOrder(order);
 
         //then
-        assertThat(newOrder.getId()).isEqualTo(order.getId());
+        assertThat(newOrder.getId()).isEqualTo(idOrder);
         assertThat(newOrder.getDetail().size()).isEqualTo(2);
     }
 
@@ -87,18 +113,18 @@ public class OrderServiceImplTest {
         assertThat(newDetail.getQuantity()).isEqualTo(20);
     }
 
-@Test
-void testDeleteOrderById() {
-    //given
-    order.setId(1);
-    doNothing().when(orderRepository).deleteById(any());
+    @Test
+    void testDeleteOrderById() {
+        //given
+        order.setId(1);
+        doNothing().when(orderRepository).deleteById(any());
 
-    //when
-    orderService.deleteOrderById(order.getId());
+        //when
+        orderService.deleteOrderById(order.getId());
 
-    //then
-    verify(orderRepository, times(1)).deleteById(order.getId());
-}
+        //then
+        verify(orderRepository, times(1)).deleteById(order.getId());
+    }
 
     @Test
     void testDeleteOrderDetailById() {
@@ -182,5 +208,66 @@ void testDeleteOrderById() {
         //then
         assertThat(result).isNotEmpty();
         assertThat(result.get().getId()).isEqualTo(detailId);
+    }
+
+    @Test
+    void testSetStatusAcceptedToOrder() {
+        //given
+        OrderState state = new OrderState();
+        state.setState("CONFIRMED");
+        order.setState(state);
+
+        OrderState stateAccepted = new OrderState();
+        stateAccepted.setState("ACCEPTED");
+
+        when(stateRepository.findByState("ACCEPTED")).thenReturn(stateAccepted);
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order savedOrder = invocation.getArgument(0);
+            return savedOrder;
+        });
+
+        //when
+        Order orderResult = orderService.setOrderStatus(order);
+
+        //then
+        assertThat(orderResult.getState().getState()).isEqualTo("ACCEPTED");
+    }
+
+    @Test
+    void testSetStatusPendingToOrder() {
+        //given
+        OrderState state = new OrderState();
+        state.setState("CONFIRMED");
+        order.setState(state);
+
+        OrderDetail detail = order.getDetail().get(0);
+        detail.setQuantity(3000);
+
+        OrderState statePending = new OrderState();
+        statePending.setState("PENDING");
+
+        when(stateRepository.findByState("PENDING")).thenReturn(statePending);
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+            Order savedOrder = invocation.getArgument(0);
+            return savedOrder;
+        });
+
+        //when
+        Order orderResult = orderService.setOrderStatus(order);
+
+        //then
+        assertThat(orderResult.getState().getState()).isEqualTo("PENDING");
+    }
+
+    @Test
+    void testSendMessageToOrdersQueue() {
+        //given
+        when(kafkaTemplate.send(anyString(),  anyString())).thenReturn(null);
+
+        //when
+        orderService.sendMessageToOrdersQueue(order);
+
+        //then
+        verify(kafkaTemplate, times(1)).send(anyString(), anyString());
     }
 }
