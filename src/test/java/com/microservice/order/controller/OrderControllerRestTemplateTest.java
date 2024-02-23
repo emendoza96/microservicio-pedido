@@ -252,15 +252,17 @@ public class OrderControllerRestTemplateTest {
     @Test
     void testSaveDetailOrder() {
         //given
-        int idOrder = 1;
-        Material material = new Material();
-        material.setId(1);
-        Construction construction = new Construction();
-        construction.setId(1);
-        OrderState state = new OrderState();
-        state.setId(1);
+        int idOrder = 2;
+
+        materialRepository.save(material1);
+        materialRepository.save(material2);
+        constructionRepository.save(construction1);
+        constructionRepository.save(construction2);
+        orderRepository.save(order);
+        orderRepository.save(order2);
+
         OrderDetail detail = new OrderDetail();
-        detail.setMaterial(material);
+        detail.setMaterial(material2);
         detail.setPrice(3.3);
         detail.setQuantity(60);
 
@@ -286,22 +288,20 @@ public class OrderControllerRestTemplateTest {
     @Test
     void testDeleteOrderById() {
         //given
-        Material material = new Material();
-        material.setId(1);
-        Construction construction = new Construction();
-        construction.setId(1);
         OrderState state = new OrderState();
         state.setId(1);
         OrderDetail detail = new OrderDetail();
-        detail.setMaterial(material);
+        detail.setMaterial(material1);
         detail.setPrice(5.5);
         detail.setQuantity(60);
 
-
         Order order = new Order();
         order.setOrderDate(Instant.now());
-        order.setConstruction(construction);
+        order.setConstruction(construction1);
         order.setDetail(List.of(detail));
+
+        materialRepository.save(material1);
+        constructionRepository.save(construction1);
 
         ResponseEntity<Order> response0 = restTemplate.postForEntity("/api/order", order, Order.class);
         Order newOrder = response0.getBody();
@@ -328,7 +328,13 @@ public class OrderControllerRestTemplateTest {
     void testEditOrder() {
         //given
         int idOrder = 1;
-        Order order = new Order();
+        materialRepository.save(material1);
+        materialRepository.save(material2);
+        constructionRepository.save(construction1);
+        constructionRepository.save(construction2);
+        orderRepository.save(order);
+        orderRepository.save(order2);
+
         order.setOrderDate(null);
 
         HttpEntity<Order> requestEntity = new HttpEntity<>(order);

@@ -88,7 +88,12 @@ public class OrderRepositoryTest {
         Order order2 = new Order();
 
         List<Construction> constructions = constructionRepository
-                                            .saveAll(List.of(new Construction(), new Construction()));
+            .saveAll(
+                List.of(
+                    Construction.builder().id(1).build(),
+                    Construction.builder().id(2).build()
+                )
+            );
 
         order.setConstruction(constructions.get(0));
         order1.setConstruction(constructions.get(1));
