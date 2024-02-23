@@ -6,9 +6,10 @@ import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.service.OrderService;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -31,19 +32,19 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/api/order")
-@ApiOperation(value = "OrderRest")
+@Tag(name = "OrderRest")
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
     @GetMapping
-    @ApiOperation(value = "Get all orders")
+    @Operation(summary = "Get all orders")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Orders successfully retrieved"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order not found")
+        @ApiResponse(responseCode = "200", description = "Orders successfully retrieved"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseEntity<List<Order>> getAllOrders() {
         try {
@@ -56,12 +57,12 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get order by id")
+    @Operation(summary = "Get order by id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order successfully retrieved"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order not found")
+        @ApiResponse(responseCode = "200", description = "Order successfully retrieved"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseEntity<Order> getOrderById(@PathVariable Integer id) {
         try {
@@ -77,12 +78,12 @@ public class OrderController {
     }
 
     @GetMapping("/construction/{id}")
-    @ApiOperation(value = "Get orders by construction id")
+    @Operation(summary = "Get orders by construction id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Orders successfully retrieved"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order not found")
+        @ApiResponse(responseCode = "200", description = "Orders successfully retrieved"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseEntity<List<Order>> getOrderByConstruction(@PathVariable Integer id) {
         try {
@@ -95,12 +96,12 @@ public class OrderController {
     }
 
     @GetMapping("/{idOrder}/detail/{id}")
-    @ApiOperation(value = "Get order by order detail id")
+    @Operation(summary = "Get order by order detail id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order successfully retrieved"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order not found")
+        @ApiResponse(responseCode = "200", description = "Order successfully retrieved"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseEntity<Order> getOrderByDetailId(@PathVariable Integer idOrder, @PathVariable Integer id) {
         try {
@@ -120,11 +121,11 @@ public class OrderController {
 
 
     @PostMapping()
-    @ApiOperation(value = "Create a new order")
+    @Operation(summary = "Create a new order")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order successfully created"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
+        @ApiResponse(responseCode = "200", description = "Order successfully created"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
     })
     public ResponseEntity<Order> saveOrder(@RequestBody Order order) {
 
@@ -140,11 +141,11 @@ public class OrderController {
     }
 
     @PostMapping("/{idOrder}/detail")
-    @ApiOperation(value = "Create a new order detail")
+    @Operation(summary = "Create a new order detail")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order detail successfully created"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
+        @ApiResponse(responseCode = "200", description = "Order detail successfully created"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
     })
     public ResponseEntity<Order> saveDetailOrder(@PathVariable Integer idOrder, @RequestBody OrderDetail detail) {
 
@@ -158,12 +159,12 @@ public class OrderController {
     }
 
     @PutMapping("/edit/{id}")
-    @ApiOperation(value = "Edit order")
+    @Operation(summary = "Edit order")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order successfully edited"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order not found")
+        @ApiResponse(responseCode = "200", description = "Order successfully edited"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseEntity<Order> editOrder(@PathVariable Integer id, @RequestBody Order order) {
 
@@ -181,12 +182,12 @@ public class OrderController {
     }
 
     @DeleteMapping("/{id}")
-    @ApiOperation(value = "Delete order by id")
+    @Operation(summary = "Delete order by id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order successfully deleted"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order not found")
+        @ApiResponse(responseCode = "200", description = "Order successfully deleted"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseEntity<Object> deleteOrderById(@PathVariable Integer id){
 
@@ -204,12 +205,12 @@ public class OrderController {
     }
 
     @DeleteMapping("/{idOrder}/detail/{id}")
-    @ApiOperation(value = "Delete order detail by id")
+    @Operation(summary = "Delete order detail by id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order detail successfully deleted"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order detail not found")
+        @ApiResponse(responseCode = "200", description = "Order detail successfully deleted"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order detail not found")
     })
     public ResponseEntity<Object> deleteOrderDetailById(@PathVariable Integer idOrder, @PathVariable Integer id){
 
@@ -228,12 +229,12 @@ public class OrderController {
 
 
     @PutMapping("/confirm/{id}")
-    @ApiOperation(value = "Confirm an order and create an event")
+    @Operation(summary = "Confirm an order and create an event")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Order successfully confirmed"),
-        @ApiResponse(code = 401, message = "Not authorized"),
-        @ApiResponse(code = 403, message = "Forbidden"),
-        @ApiResponse(code = 404, message = "Order not found")
+        @ApiResponse(responseCode = "200", description = "Order successfully confirmed"),
+        @ApiResponse(responseCode = "401", description = "Not authorized"),
+        @ApiResponse(responseCode = "403", description = "Forbidden"),
+        @ApiResponse(responseCode = "404", description = "Order not found")
     })
     public ResponseEntity<String> confirmOrder(@PathVariable Integer id){
 
