@@ -13,11 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microservice.order.dao.ConstructionRepository;
 import com.microservice.order.dao.MaterialRepository;
 import com.microservice.order.dao.OrderRepository;
@@ -26,6 +28,7 @@ import com.microservice.order.domain.Material;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.domain.OrderState;
+import com.microservice.order.security.jwt.JwtUtils;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrderControllerRestTemplateTest {
@@ -42,6 +45,11 @@ public class OrderControllerRestTemplateTest {
     @Autowired
     private MaterialRepository materialRepository;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    private HttpHeaders headers;
+
     private Order order;
     private Order order2;
     private Construction construction1;
@@ -51,6 +59,12 @@ public class OrderControllerRestTemplateTest {
 
     @BeforeEach
     void setUp() {
+
+        // Set up JWT token
+        String token = "Bearer " + jwtUtils.generateAccessToken("emi123");
+        headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         // First order:
 
@@ -127,7 +141,8 @@ public class OrderControllerRestTemplateTest {
         orderRepository.save(order2);
 
         //when
-        ResponseEntity<Order[]> response = restTemplate.getForEntity("/api/order", Order[].class);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Order[]> response = restTemplate.exchange("/api/order", HttpMethod.GET, entity, Order[].class);
         List<Order> orders = Arrays.asList(response.getBody());
 
         //then
@@ -148,7 +163,8 @@ public class OrderControllerRestTemplateTest {
         orderRepository.save(order2); // Order for Construction with id = 2
 
         //when
-        ResponseEntity<Order[]> response = restTemplate.getForEntity("/api/order/construction/{id}", Order[].class, idConstructionSuccess);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Order[]> response = restTemplate.exchange("/api/order/construction/{id}", HttpMethod.GET, entity, Order[].class, idConstructionSuccess);
         List<Order> orders = Arrays.asList(response.getBody());
 
         //then
@@ -169,7 +185,8 @@ public class OrderControllerRestTemplateTest {
         orderRepository.save(order2); // Order for Construction with id = 2
 
         //when
-        ResponseEntity<Order[]> response = restTemplate.getForEntity("/api/order/construction/{id}", Order[].class, idConstructionEmpty);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Order[]> response = restTemplate.exchange("/api/order/construction/{id}", HttpMethod.GET, entity, Order[].class, idConstructionEmpty);
 
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -189,8 +206,11 @@ public class OrderControllerRestTemplateTest {
         orderRepository.save(order2);
 
         //when
-        ResponseEntity<Order> response = restTemplate.getForEntity(
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Order> response = restTemplate.exchange(
             "/api/order/{idOrder}/detail/{idDetail}",
+            HttpMethod.GET,
+            entity,
             Order.class,
             idOrder,
             idDetail
@@ -214,8 +234,11 @@ public class OrderControllerRestTemplateTest {
         orderRepository.save(order2);
 
         //when
-        ResponseEntity<Order> response = restTemplate.getForEntity(
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<Order> response = restTemplate.exchange(
             "/api/order/{id}",
+            HttpMethod.GET,
+            entity,
             Order.class,
             idOrder
         );
@@ -227,7 +250,7 @@ public class OrderControllerRestTemplateTest {
     }
 
     @Test
-    void testSaveOrder() {
+    void testSaveOrder() throws JsonProcessingException {
         //given
         materialRepository.save(material1);
         materialRepository.save(material2);
@@ -235,7 +258,8 @@ public class OrderControllerRestTemplateTest {
         constructionRepository.save(construction2);
 
         //when
-        ResponseEntity<Order> response = restTemplate.postForEntity("/api/order", order, Order.class);
+        HttpEntity<Order> entity = new HttpEntity<>(order, headers);
+        ResponseEntity<Order> response = restTemplate.exchange("/api/order", HttpMethod.POST, entity, Order.class);
 
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -266,9 +290,9 @@ public class OrderControllerRestTemplateTest {
         detail.setPrice(3.3);
         detail.setQuantity(60);
 
-        HttpEntity<OrderDetail> requestEntity = new HttpEntity<>(detail);
 
         //when
+        HttpEntity<OrderDetail> requestEntity = new HttpEntity<>(detail, headers);
         ResponseEntity<Order> response = restTemplate.exchange(
             "/api/order/{idOrder}/detail",
             HttpMethod.POST,
@@ -303,14 +327,16 @@ public class OrderControllerRestTemplateTest {
         materialRepository.save(material1);
         constructionRepository.save(construction1);
 
-        ResponseEntity<Order> response0 = restTemplate.postForEntity("/api/order", order, Order.class);
+        HttpEntity<Order> entity0 = new HttpEntity<>(order, headers);
+        ResponseEntity<Order> response0 = restTemplate.exchange("/api/order", HttpMethod.POST, entity0, Order.class);
         Order newOrder = response0.getBody();
 
         //when
+        HttpEntity<String> entity = new HttpEntity<>(headers);
         ResponseEntity<Object> response = restTemplate.exchange(
             "/api/order/{id}",
             HttpMethod.DELETE,
-            null,
+            entity,
             Object.class,
             newOrder.getId()
         );
@@ -337,9 +363,9 @@ public class OrderControllerRestTemplateTest {
 
         order.setOrderDate(null);
 
-        HttpEntity<Order> requestEntity = new HttpEntity<>(order);
 
         //when
+        HttpEntity<Order> requestEntity = new HttpEntity<>(order, headers);
         ResponseEntity<Order> response = restTemplate.exchange(
             "/api/order/edit/{id}",
             HttpMethod.PUT,

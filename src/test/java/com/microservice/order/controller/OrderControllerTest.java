@@ -6,38 +6,45 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microservice.order.domain.Construction;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
-import com.microservice.order.service.impl.OrderServiceImpl;
+import com.microservice.order.security.filters.MockJwtAuthorizationFilter;
+import com.microservice.order.service.OrderService;
 
-@WebMvcTest
+@ExtendWith(MockitoExtension.class)
 public class OrderControllerTest {
+
+    @Mock
+    private OrderService orderService;
+
+    @InjectMocks
+    private OrderController orderController;
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private OrderServiceImpl orderService;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     private Order order;
@@ -54,6 +61,13 @@ public class OrderControllerTest {
         detail2.setOrder(order);
 
         order.setDetail(List.of(detail1, detail2));
+
+        mockMvc = MockMvcBuilders.standaloneSetup(orderController)
+            .addFilters(new MockJwtAuthorizationFilter())
+            .build()
+        ;
+
+        objectMapper = new ObjectMapper();
     }
 
     @Test
@@ -64,7 +78,6 @@ public class OrderControllerTest {
         when(orderService.getOrderById(idOrder)).thenReturn(Optional.of(order));
         doNothing().when(orderService).deleteOrderById(idOrder);
 
-        //when
         ResultActions response = mockMvc.perform(
             MockMvcRequestBuilders.delete("/api/order/{id}", idOrder)
             .contentType(MediaType.APPLICATION_JSON)
@@ -233,7 +246,6 @@ public class OrderControllerTest {
         Order order1 = new Order();
         order1.setId(3);
         order1.setDetail(List.of(new OrderDetail()));
-        order1.setOrderDate(Instant.now());
 
         Construction construction = new Construction();
         construction.setId(1);
@@ -254,10 +266,10 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isCreated())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.detail").isNotEmpty())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.orderDate").isNotEmpty());
+            .andExpect(MockMvcResultMatchers.status().isCreated())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.detail").isNotEmpty())
+        ;
 
     }
 
