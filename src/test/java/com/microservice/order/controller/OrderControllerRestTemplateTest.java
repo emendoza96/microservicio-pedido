@@ -361,7 +361,7 @@ public class OrderControllerRestTemplateTest {
         orderRepository.save(order);
         orderRepository.save(order2);
 
-        order.setOrderDate(null);
+        order.setOrderDate(Instant.now());
 
 
         //when
@@ -377,7 +377,7 @@ public class OrderControllerRestTemplateTest {
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getOrderDate()).isNull();
+        assertThat(response.getBody().getOrderDate()).isEqualTo(order.getOrderDate());
     }
 
     @Test

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
+import com.microservice.order.error.ErrorDetails;
 
 public interface OrderService {
 
@@ -17,7 +18,8 @@ public interface OrderService {
     public void deleteOrderById(Integer id);
     public void deleteOrderDetailById(Integer id);
     public Order confirmOrder(Order order);
-    public Boolean validateOrder(Order order);
     public Order setOrderStatus(Order order);
     public void sendMessageToOrdersQueue(Order order);
+    public ErrorDetails getErrors(Order order);
+
 }

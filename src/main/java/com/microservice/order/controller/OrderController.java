@@ -4,6 +4,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
+import com.microservice.order.error.ErrorDetails;
+import com.microservice.order.error.ErrorResponse;
 import com.microservice.order.service.OrderService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,13 +49,15 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity<List<Order>> getAllOrders() {
+    public ResponseEntity<?> getAllOrders() {
         try {
             List<Order> orders = orderService.getAllOrders();
             return ResponseEntity.ok().body(orders);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -64,16 +69,17 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity<Order> getOrderById(@PathVariable Integer id) {
+    public ResponseEntity<?> getOrderById(@PathVariable Integer id) {
         try {
             Order order = orderService.getOrderById(id).orElseThrow();
             return ResponseEntity.ok().body(order);
         } catch (NoSuchElementException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -85,13 +91,15 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity<List<Order>> getOrderByConstruction(@PathVariable Integer id) {
+    public ResponseEntity<?> getOrderByConstruction(@PathVariable Integer id) {
         try {
             List<Order> orders = orderService.getOrderByConstructionId(id);
             return ResponseEntity.ok().body(orders);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -103,7 +111,7 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity<Order> getOrderByDetailId(@PathVariable Integer idOrder, @PathVariable Integer id) {
+    public ResponseEntity<?> getOrderByDetailId(@PathVariable Integer idOrder, @PathVariable Integer id) {
         try {
             Order order = orderService.getOrderDetailById(id).orElseThrow().getOrder();
 
@@ -111,11 +119,12 @@ public class OrderController {
 
             return ResponseEntity.ok().body(order);
         } catch (NoSuchElementException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -127,16 +136,24 @@ public class OrderController {
         @ApiResponse(responseCode = "401", description = "Not authorized"),
         @ApiResponse(responseCode = "403", description = "Forbidden"),
     })
-    public ResponseEntity<Order> saveOrder(@RequestBody Order order) {
+    public ResponseEntity<?> saveOrder(@RequestBody Order order) {
 
        try {
-            if(!orderService.validateOrder(order)) throw new Exception("Bad data");
+            ErrorDetails errorDetails = orderService.getErrors(order);
+
+            if (!errorDetails.getDetails().isEmpty()) {
+                errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+                errorDetails.setMessage("Required data is missing");
+                return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
+            }
 
             Order newOrder = orderService.createOrder(order);
             return ResponseEntity.status(201).body(newOrder);
        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
        }
     }
 
@@ -147,14 +164,29 @@ public class OrderController {
         @ApiResponse(responseCode = "401", description = "Not authorized"),
         @ApiResponse(responseCode = "403", description = "Forbidden"),
     })
-    public ResponseEntity<Order> saveDetailOrder(@PathVariable Integer idOrder, @RequestBody OrderDetail detail) {
+    public ResponseEntity<?> saveDetailOrder(@PathVariable Integer idOrder, @RequestBody OrderDetail detail) {
 
         try {
-            OrderDetail detailResult = orderService.createOrderDetail(idOrder, detail);
-            return ResponseEntity.ok().body(detailResult.getOrder());
+            Order order = orderService.getOrderById(idOrder).orElseThrow();
+            order.getDetail().add(detail);
+            detail.setOrder(order);
+
+            ErrorDetails errorDetails = orderService.getErrors(order);
+
+            if (!errorDetails.getDetails().isEmpty()) {
+                errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+                errorDetails.setMessage("Required data is missing");
+                return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
+            }
+
+            return ResponseEntity.ok().body(orderService.createOrder(order));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -166,18 +198,28 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity<Order> editOrder(@PathVariable Integer id, @RequestBody Order order) {
+    public ResponseEntity<?> editOrder(@PathVariable Integer id, @RequestBody Order order) {
 
         try {
+
+            ErrorDetails errorDetails = orderService.getErrors(order);
+
+            if (!errorDetails.getDetails().isEmpty()) {
+                errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+                errorDetails.setMessage("Required data is missing");
+                return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
+            }
+
             orderService.getOrderById(id).orElseThrow();
             Order orderResult = orderService.createOrder(order);
             return ResponseEntity.ok().body(orderResult);
         } catch (NoSuchElementException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -189,18 +231,19 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity<Object> deleteOrderById(@PathVariable Integer id){
+    public ResponseEntity<?> deleteOrderById(@PathVariable Integer id){
 
         try {
             orderService.getOrderById(id).orElseThrow();
             orderService.deleteOrderById(id);
             return ResponseEntity.ok().build();
         } catch (NoSuchElementException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -212,18 +255,19 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order detail not found")
     })
-    public ResponseEntity<Object> deleteOrderDetailById(@PathVariable Integer idOrder, @PathVariable Integer id){
+    public ResponseEntity<?> deleteOrderDetailById(@PathVariable Integer idOrder, @PathVariable Integer id){
 
         try {
             orderService.getOrderById(idOrder).orElseThrow();
             orderService.deleteOrderDetailById(id);
             return ResponseEntity.ok().build();
         } catch (NoSuchElementException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 
@@ -236,7 +280,7 @@ public class OrderController {
         @ApiResponse(responseCode = "403", description = "Forbidden"),
         @ApiResponse(responseCode = "404", description = "Order not found")
     })
-    public ResponseEntity<String> confirmOrder(@PathVariable Integer id){
+    public ResponseEntity<?> confirmOrder(@PathVariable Integer id){
 
         try {
             Order order = orderService.getOrderById(id).orElseThrow();
@@ -249,11 +293,12 @@ public class OrderController {
 
             return ResponseEntity.ok().body("Order " + order.getState().getState());
         } catch (NoSuchElementException e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.status(404).build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
 }
