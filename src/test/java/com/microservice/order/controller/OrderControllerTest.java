@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -290,6 +291,7 @@ public class OrderControllerTest {
 
         Order order1 = new Order();
         order1.setId(idOrder);
+        order1.setDetail(new ArrayList<>());
 
         OrderDetail detail = new OrderDetail();
         detail.setPrice(33d);
