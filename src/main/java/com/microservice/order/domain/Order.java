@@ -1,7 +1,6 @@
 package com.microservice.order.domain;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -35,7 +34,7 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<OrderDetail> detail = new ArrayList<>();
+    private List<OrderDetail> detail;
 
     @ManyToOne
     @JoinColumn(name = "construction_id")
