@@ -8,11 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.microservice.order.dao.ConstructionRepository;
+import com.microservice.order.dao.MaterialRepository;
 import com.microservice.order.dao.OrderDetailRepository;
 import com.microservice.order.dao.OrderRepository;
 import com.microservice.order.dao.OrderStateRepository;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
+import com.microservice.order.error.ErrorDetails;
 import com.microservice.order.helpers.OrderEventHelper;
 import com.microservice.order.service.OrderService;
 import com.microservice.order.util.JsonUtils;
@@ -28,6 +31,12 @@ public class OrderServiceImpl implements OrderService{
 
     @Autowired
     private OrderStateRepository stateRepository;
+
+    @Autowired
+    private MaterialRepository materialRepository;
+
+    @Autowired
+    private ConstructionRepository constructionRepository;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -82,12 +91,22 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public Boolean validateOrder(Order order) {
-        Boolean hasConstruction = order.getConstruction() != null && order.getConstruction().getId() != null;
-        Boolean hasDetails = order.getDetail().stream().allMatch(d -> d.getMaterial() != null && d.getQuantity() != null);
-        Boolean hasOrderDate = order.getOrderDate() != null;
+    public ErrorDetails getErrors(Order order) {
+        ErrorDetails errorDetails = new ErrorDetails();
 
-        return hasConstruction && hasDetails && hasOrderDate;
+        if (order.getConstruction() == null || order.getConstruction().getId() == null || !constructionRepository.existsById(order.getConstruction().getId())) {
+            errorDetails.getDetails().put("construction", "The order needs an existing related construction");
+        }
+
+        if (!order.getDetail().stream().allMatch(d -> d.getMaterial() != null && materialRepository.existsById(d.getMaterial().getId()) && d.getQuantity() != null)) {
+            errorDetails.getDetails().put("details", "Incomplete details. Each detail needs a material and its quantity");
+        }
+
+        if (order.getOrderDate() == null) {
+            errorDetails.getDetails().put("orderDate", "Missing order date");
+        }
+
+        return errorDetails;
     }
 
     @Override
@@ -121,6 +140,5 @@ public class OrderServiceImpl implements OrderService{
 
         kafkaTemplate.send("builder-yard-orders", JsonUtils.toJson(ordersHelper));
     }
-
 
 }

@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microservice.order.domain.Construction;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
+import com.microservice.order.error.ErrorDetails;
 import com.microservice.order.security.filters.MockJwtAuthorizationFilter;
 import com.microservice.order.service.OrderService;
 
@@ -252,7 +253,7 @@ public class OrderControllerTest {
         order1.setConstruction(construction);
 
         //given
-        when(orderService.validateOrder(any(Order.class))).thenReturn(true);
+        when(orderService.getErrors(any(Order.class))).thenReturn(new ErrorDetails());
         when(orderService.createOrder(any(Order.class))).thenReturn(order1);
 
         String jsonResult = objectMapper.writeValueAsString(order1);
