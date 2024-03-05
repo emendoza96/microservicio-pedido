@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -65,6 +66,7 @@ public class OrderControllerTest {
 
         mockMvc = MockMvcBuilders.standaloneSetup(orderController)
             .addFilters(new MockJwtAuthorizationFilter())
+            .setMessageConverters(new MappingJackson2HttpMessageConverter())
             .build()
         ;
 
@@ -86,7 +88,8 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isOk());
+            .andExpect(MockMvcResultMatchers.status().isOk())
+        ;
 
         verify(orderService, times(1)).deleteOrderById(idOrder);
     }
@@ -110,7 +113,8 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isOk());
+            .andExpect(MockMvcResultMatchers.status().isOk())
+        ;
 
         verify(orderService, times(1)).deleteOrderDetailById(idDetail);
     }
@@ -127,6 +131,7 @@ public class OrderControllerTest {
         order1.setDetail(List.of(new OrderDetail()));
         order1.setOrderDate(Instant.now());
 
+        when(orderService.getErrors(any())).thenReturn(new ErrorDetails());
         when(orderService.getOrderById(any())).thenReturn(Optional.of(order));
         when(orderService.createOrder(any(Order.class))).thenReturn(order1);
 
@@ -141,10 +146,11 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idOrder))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.detail").isArray())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.orderDate").isNotEmpty());
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idOrder))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.detail").isArray())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.orderDate").isNotEmpty())
+        ;
 
     }
 
@@ -166,8 +172,9 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.[1].orderDate").isNotEmpty());
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].orderDate").isNotEmpty())
+        ;
     }
 
     @Test
@@ -194,10 +201,11 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.[0].construction").isNotEmpty())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.[0].construction.description").value(construction.getDescription()));
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].construction").isNotEmpty())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].construction.description").value(construction.getDescription()))
+        ;
     }
 
     @Test
@@ -218,8 +226,9 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idDetail));
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idDetail))
+        ;
     }
 
     @Test
@@ -238,8 +247,9 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idOrder));
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idOrder))
+        ;
     }
 
     @Test
@@ -289,7 +299,9 @@ public class OrderControllerTest {
         detailResult.setOrder(order1);
 
         //given
-        when(orderService.createOrderDetail(any(), any(OrderDetail.class))).thenReturn(detailResult);
+        when(orderService.getErrors(any())).thenReturn(new ErrorDetails());
+        when(orderService.getOrderById(any())).thenReturn(Optional.of(order1));
+        when(orderService.createOrder(any())).thenReturn(order1);
 
         String jsonResult = objectMapper.writeValueAsString(detail);
 
@@ -302,10 +314,10 @@ public class OrderControllerTest {
 
         //then
         response.andDo(MockMvcResultHandlers.print())
-        .andExpect(MockMvcResultMatchers.status().isOk());
-        // .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
-        // .andExpect(MockMvcResultMatchers.jsonPath("$.detail").isNotEmpty())
-        // .andExpect(MockMvcResultMatchers.jsonPath("$.orderDate").isNotEmpty());
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(idOrder))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.detail").isNotEmpty())
+        ;
     }
 
 }
