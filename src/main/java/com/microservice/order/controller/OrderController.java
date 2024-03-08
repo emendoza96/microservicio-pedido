@@ -2,6 +2,7 @@ package com.microservice.order.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.microservice.order.client.InventoryClient;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.error.ErrorDetails;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -40,6 +42,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private InventoryClient inventoryClient;
 
     @GetMapping
     @Operation(summary = "Get all orders")
@@ -300,5 +305,21 @@ public class OrderController {
             errorDetails.setMessage(e.getMessage());
             return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
+    }
+
+    @GetMapping("/check/{id}")
+    public ResponseEntity<?> checkStock(@PathVariable Integer id, @RequestParam Integer quantity) {
+
+        try {
+            Boolean hasStock = inventoryClient.checkStock(id, quantity);
+
+            return ResponseEntity.ok().body(hasStock);
+        } catch (Exception e) {
+            ErrorDetails errorDetails = new ErrorDetails();
+            errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
+            errorDetails.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
+        }
+
     }
 }
