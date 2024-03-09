@@ -61,10 +61,7 @@ public class OrderControllerRestTemplateTest {
     void setUp() {
 
         // Set up JWT token
-        String token = "Bearer " + jwtUtils.generateAccessToken("emi123");
-        headers = new HttpHeaders();
-        headers.set("Authorization", token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers = jwtUtils.getHeadersWithBearerToken();
 
         // First order:
 

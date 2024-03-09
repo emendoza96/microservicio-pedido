@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.microservice.order.DTO.OrderDetailDTO;
 import com.microservice.order.dao.ConstructionRepository;
 import com.microservice.order.dao.MaterialRepository;
 import com.microservice.order.dao.OrderDetailRepository;
@@ -16,7 +17,6 @@ import com.microservice.order.dao.OrderStateRepository;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.error.ErrorDetails;
-import com.microservice.order.helpers.OrderEventHelper;
 import com.microservice.order.service.OrderService;
 import com.microservice.order.util.JsonUtils;
 
@@ -124,11 +124,11 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public void sendMessageToOrdersQueue(Order order) {
-        List<OrderEventHelper> ordersHelper = new ArrayList<>();
+        List<OrderDetailDTO> ordersHelper = new ArrayList<>();
 
         for(OrderDetail detail : order.getDetail()) {
             ordersHelper.add(
-                new OrderEventHelper(
+                new OrderDetailDTO(
                     order.getId(),
                     detail.getId(),
                     detail.getQuantity(),

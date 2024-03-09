@@ -1,6 +1,6 @@
-package com.microservice.order.helpers;
+package com.microservice.order.DTO;
 
-public class OrderEventHelper{
+public class OrderDetailDTO{
 
     Integer idOrder;
     Integer idDetail;
@@ -8,7 +8,9 @@ public class OrderEventHelper{
     Double price;
     Integer idMaterial;
 
-    public OrderEventHelper(Integer idOrder, Integer idDetail, Integer quantity, Double price, Integer idMaterial) {
+    public OrderDetailDTO() {}
+
+    public OrderDetailDTO(Integer idOrder, Integer idDetail, Integer quantity, Double price, Integer idMaterial) {
         this.idOrder = idOrder;
         this.idDetail = idDetail;
         this.quantity = quantity;
@@ -38,7 +40,7 @@ public class OrderEventHelper{
 
     @Override
     public String toString() {
-        return "OrderEventHelper [idOrder=" + idOrder + ", idDetail=" + idDetail + ", quantity=" + quantity + ", price="
+        return "OrderDetailDTO [idOrder=" + idOrder + ", idDetail=" + idDetail + ", quantity=" + quantity + ", price="
                 + price + ", idMaterial=" + idMaterial + "]";
     }
 

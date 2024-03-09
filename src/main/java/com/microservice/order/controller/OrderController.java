@@ -7,6 +7,7 @@ import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.error.ErrorDetails;
 import com.microservice.order.error.ErrorResponse;
+import com.microservice.order.helpers.StockAvailability;
 import com.microservice.order.service.OrderService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -144,12 +145,19 @@ public class OrderController {
     public ResponseEntity<?> saveOrder(@RequestBody Order order) {
 
        try {
+
             ErrorDetails errorDetails = orderService.getErrors(order);
 
             if (!errorDetails.getDetails().isEmpty()) {
                 errorDetails.setCode(HttpStatus.BAD_REQUEST.value());
                 errorDetails.setMessage("Required data is missing");
                 return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
+            }
+
+            StockAvailability stockAvailability = inventoryClient.checkStockAvailability(order.getDetail());
+
+            if (!stockAvailability.getAvailability()) {
+                return ResponseEntity.ok().body(stockAvailability);
             }
 
             Order newOrder = orderService.createOrder(order);

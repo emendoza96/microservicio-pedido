@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -21,6 +23,9 @@ public class JwtUtils {
 
     @Value("${jwt.time.expiration}")
     private String timeExpiration;
+
+    @Value("${spring.security.user.name}")
+    private String username;
 
     public String generateAccessToken(String username) {
         return Jwts.builder()
@@ -68,4 +73,14 @@ public class JwtUtils {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    public HttpHeaders getHeadersWithBearerToken() {
+        HttpHeaders headers = new HttpHeaders();
+
+        String token = "Bearer " + generateAccessToken(username);
+        headers.set("Authorization", token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
 }
