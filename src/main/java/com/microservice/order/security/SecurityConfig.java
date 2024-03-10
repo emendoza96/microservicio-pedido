@@ -26,6 +26,7 @@ public class SecurityConfig {
         return httpSecurity
             .csrf(config -> config.disable())
             .authorizeHttpRequests(auth -> {
+                auth.requestMatchers("/actuator/**").permitAll();
                 auth.anyRequest().authenticated();
             })
             .sessionManagement(session -> {

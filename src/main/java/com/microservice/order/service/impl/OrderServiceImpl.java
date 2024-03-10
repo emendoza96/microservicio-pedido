@@ -22,6 +22,8 @@ import com.microservice.order.helpers.StockAvailability;
 import com.microservice.order.service.OrderService;
 import com.microservice.order.util.JsonUtils;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 @Service
 public class OrderServiceImpl implements OrderService{
 
@@ -115,6 +117,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
+    @CircuitBreaker(name = "StockAvailabilityService")
     public Order setOrderStatus(Order order) {
 
         StockAvailability stockAvailability = inventoryClient.checkStockAvailability(order.getDetail());
@@ -129,6 +132,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
+    @CircuitBreaker(name = "KafkaService")
     public void sendMessageToOrdersQueue(Order order) {
         List<OrderDetailDTO> ordersHelper = new ArrayList<>();
 
