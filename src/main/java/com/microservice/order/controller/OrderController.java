@@ -139,6 +139,7 @@ public class OrderController {
     public ResponseEntity<?> saveOrder(@RequestBody Order order) {
 
        try {
+
             ErrorDetails errorDetails = orderService.getErrors(order);
 
             if (!errorDetails.getDetails().isEmpty()) {
@@ -301,4 +302,5 @@ public class OrderController {
             return ResponseEntity.badRequest().body(new ErrorResponse(errorDetails));
         }
     }
+
 }

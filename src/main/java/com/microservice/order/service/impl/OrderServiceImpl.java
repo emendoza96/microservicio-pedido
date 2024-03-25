@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.microservice.order.DTO.OrderDetailDTO;
+import com.microservice.order.client.InventoryClient;
 import com.microservice.order.dao.ConstructionRepository;
 import com.microservice.order.dao.MaterialRepository;
 import com.microservice.order.dao.OrderDetailRepository;
@@ -16,9 +18,11 @@ import com.microservice.order.dao.OrderStateRepository;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.error.ErrorDetails;
-import com.microservice.order.helpers.OrderEventHelper;
+import com.microservice.order.helpers.StockAvailability;
 import com.microservice.order.service.OrderService;
 import com.microservice.order.util.JsonUtils;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @Service
 public class OrderServiceImpl implements OrderService{
@@ -37,6 +41,9 @@ public class OrderServiceImpl implements OrderService{
 
     @Autowired
     private ConstructionRepository constructionRepository;
+
+    @Autowired
+    private InventoryClient inventoryClient;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -110,25 +117,28 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
+    @CircuitBreaker(name = "StockAvailabilityService")
     public Order setOrderStatus(Order order) {
-        Boolean hasStock = true;
 
-        for(OrderDetail detail : order.getDetail()) {
-            if (detail.getQuantity() > detail.getMaterial().getCurrentStock()) hasStock = false;
+        StockAvailability stockAvailability = inventoryClient.checkStockAvailability(order.getDetail());
+
+        if(stockAvailability.getAvailability()) {
+            order.setState(stateRepository.findByState("ACCEPTED"));
+        } else {
+            order.setState(stateRepository.findByState("PENDING"));
         }
-
-        order.setState(hasStock ? stateRepository.findByState("ACCEPTED") : stateRepository.findByState("PENDING"));
 
         return orderRepository.save(order);
     }
 
     @Override
+    @CircuitBreaker(name = "KafkaService")
     public void sendMessageToOrdersQueue(Order order) {
-        List<OrderEventHelper> ordersHelper = new ArrayList<>();
+        List<OrderDetailDTO> ordersHelper = new ArrayList<>();
 
         for(OrderDetail detail : order.getDetail()) {
             ordersHelper.add(
-                new OrderEventHelper(
+                new OrderDetailDTO(
                     order.getId(),
                     detail.getId(),
                     detail.getQuantity(),

@@ -19,7 +19,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
+import com.microservice.order.client.InventoryClient;
 import com.microservice.order.dao.OrderDetailRepository;
 import com.microservice.order.dao.OrderRepository;
 import com.microservice.order.dao.OrderStateRepository;
@@ -28,10 +30,12 @@ import com.microservice.order.domain.Material;
 import com.microservice.order.domain.Order;
 import com.microservice.order.domain.OrderDetail;
 import com.microservice.order.domain.OrderState;
+import com.microservice.order.helpers.StockAvailability;
 
 
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class OrderServiceImplTest {
 
     @Mock
@@ -42,6 +46,9 @@ public class OrderServiceImplTest {
 
     @Mock
     private OrderStateRepository stateRepository;
+
+    @Mock
+    private InventoryClient inventoryClient;
 
     @Mock
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -225,6 +232,11 @@ public class OrderServiceImplTest {
             Order savedOrder = invocation.getArgument(0);
             return savedOrder;
         });
+        when(inventoryClient.checkStockAvailability(any())).thenAnswer(invocation -> {
+            StockAvailability stockAvailability = new StockAvailability();
+            stockAvailability.setAvailability(true);
+            return stockAvailability;
+        });
 
         //when
         Order orderResult = orderService.setOrderStatus(order);
@@ -250,6 +262,11 @@ public class OrderServiceImplTest {
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order savedOrder = invocation.getArgument(0);
             return savedOrder;
+        });
+        when(inventoryClient.checkStockAvailability(any())).thenAnswer(invocation -> {
+            StockAvailability stockAvailability = new StockAvailability();
+            stockAvailability.setAvailability(false);
+            return stockAvailability;
         });
 
         //when
