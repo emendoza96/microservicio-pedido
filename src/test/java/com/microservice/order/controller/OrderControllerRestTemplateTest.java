@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.microservice.order.dao.ConstructionRepository;
@@ -31,6 +32,7 @@ import com.microservice.order.domain.OrderState;
 import com.microservice.order.security.jwt.JwtUtils;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 public class OrderControllerRestTemplateTest {
 
     @Autowired

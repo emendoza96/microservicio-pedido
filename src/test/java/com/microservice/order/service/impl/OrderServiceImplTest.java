@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.microservice.order.client.InventoryClient;
 import com.microservice.order.dao.OrderDetailRepository;
@@ -34,6 +35,7 @@ import com.microservice.order.helpers.StockAvailability;
 
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class OrderServiceImplTest {
 
     @Mock
